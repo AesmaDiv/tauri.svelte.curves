@@ -6,7 +6,8 @@
     'Установиль ноль',
     'Установить максимум X',
     'Установить максимум Y',
-    'Добавление точек'
+    'Добавление группа 1',
+    'Добавление группа 2',
   ];
   const onChange = (event: any)  => {
     let mode: number = parseInt(
@@ -16,8 +17,7 @@
     Mode.set(isNaN(mode) ? -1 : mode);
     console.log($Mode);
   }
-  
-  
+
 </script>
 
 <!--------------------------------- РАЗМЕТКА ---------------------------------->
@@ -35,13 +35,15 @@
 
 <!----------------------------------- СТИЛИ ----------------------------------->
 <style>
-.options-container {
-  display: flex;
-  flex-direction: column;
-  align-items: start;
+  .options-container {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
 
-  padding: 10px;
-  border: 1px solid white;
-}
+    padding: 10px;
+    border: 1px solid white;
+  }
 </style>
 

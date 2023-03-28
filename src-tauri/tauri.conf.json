@@ -4,7 +4,7 @@
     "beforeBuildCommand": "npm run build",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
-    "withGlobalTauri": false
+    "withGlobalTauri": true
   },
   "package": {
     "productName": "tauri-svelte-curves",
@@ -12,7 +12,14 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false,
+      "all": true,
+      "path": {
+        "all": true
+      },
+      "fs": {
+        "all": true,
+        "scope": ["$APP", "$APP/*", "$DESKTOP", "$DOCUMENT"]
+      },
       "shell": {
         "all": false,
         "open": true

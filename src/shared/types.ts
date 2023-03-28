@@ -5,3 +5,8 @@ export interface IChartData {
   coordY : Point,
   points : Array<Point>
 }
+export type GroupData = {
+  axis_min: number,
+  axis_max: number,
+  points: Array<Point>
+}

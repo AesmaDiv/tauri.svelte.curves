@@ -1,25 +1,25 @@
 <!-------------------------------- ФУНКЦИОНАЛ --------------------------------->
 <script lang="ts">
-  import { CurrentMousePosition } from '../shared/store';
+  import { PointMouse } from '../shared/store';
 
   let text: string = ".blank";
-  CurrentMousePosition.subscribe(p => text = `${p.x} ${p.y}`);
+  PointMouse.subscribe(p => text = `X= ${p.x}  Y= ${p.y}`);
 </script>
 
 <!--------------------------------- РАЗМЕТКА ---------------------------------->
 <div class="root">
-  <input type="text" class="logger-text" value={text}>
+  <input class="coords-input" type="text" value={text}>
 </div>
 
 <!----------------------------------- СТИЛИ ----------------------------------->
 <style>
-.root {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  border: 1px solid white;
-}
-.logger-text {
-  width: 10em;
-}
+  .root {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    border: 1px solid white;
+  }
+  .coords-input {
+    width: 10em;
+  }
 </style>
