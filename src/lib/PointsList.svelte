@@ -1,7 +1,7 @@
 <!-------------------------------- ФУНКЦИОНАЛ --------------------------------->
 <script lang="ts">
   import { ChartData } from "../shared/store";
-  import { roundTo } from "../shared/common";
+  import { translatePoint } from "../shared/common";
   import type { Point } from "../shared/types";
 
   export let groupName: string = "group1";
@@ -9,20 +9,9 @@
   let values = [];
 
   ChartData.subscribe(prev => {
-    values = prev[groupName].points.map((point: Point) => {
-      let [x, y] = [
-        point.x - $ChartData.coord0.x,
-        $ChartData.coord0.y - point.y
-      ];
-      x *= roundTo(
-        ($ChartData.axisX.max - $ChartData.axisX.min) /
-        ($ChartData.coordX.x - $ChartData.coord0.x), 4);
-      y *= roundTo(
-        ($ChartData[groupName].axis.max - $ChartData[groupName].axis.min) /
-        ($ChartData.coord0.y - $ChartData.coordY.y), 4);
-
-      return {x, y};
-    });
+    values = prev[groupName].points.map(
+      (point: Point) => translatePoint($ChartData, groupName, point)
+    );
   });
 </script>
 

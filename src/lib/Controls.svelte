@@ -3,9 +3,11 @@
   import { open } from '@tauri-apps/api/dialog';
   import { ChartData, Mode, ImagePath } from "../shared/store";
   import { GROUPS } from "../shared/common";
-    import { convertFileSrc } from '@tauri-apps/api/tauri';
+  import { convertFileSrc } from '@tauri-apps/api/tauri';
 
-  const onClear = ()  => ChartData.update(prev => {
+
+  const onClearPoints = ()  => ChartData.update(prev => {
+    if (!prev[Object.keys(GROUPS)[$Mode - 3]]) return prev;
     prev[Object.keys(GROUPS)[$Mode - 3]].points = [];
     return {...prev}
   });
@@ -18,12 +20,13 @@
       }]
     }).then((value: string) => ImagePath.set(value ? convertFileSrc(value) : ""));
   }
+
 </script>
 
 <!--------------------------------- РАЗМЕТКА ---------------------------------->
 <div class="control-root">
-  <button on:click={onSetBackground}>Set background</button>
-  <button on:click={onClear}>Clear points</button>
+  <button on:click={onSetBackground}>Загрузить изображение</button>
+  <button on:click={onClearPoints}>Очистить точки</button>
 </div>
 
 <!----------------------------------- СТИЛИ ----------------------------------->

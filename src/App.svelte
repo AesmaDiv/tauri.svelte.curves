@@ -2,11 +2,11 @@
   import Options from './lib/Options.svelte';
   import Chart from './lib/Chart.svelte';
   import Coords from './lib/Coords.svelte';
+  import Values from './lib/Values.svelte';
   import AxesParams from './lib/AxesParams.svelte';
   import Zoom from './lib/Zoom.svelte';
   import PointsList from './lib/PointsList.svelte';
 
-  import { PointMouse, PointChart } from './shared/store';
   import { GROUPS } from './shared/common';
   import Controls from './lib/Controls.svelte';
 
@@ -25,8 +25,8 @@
     <div class="app-grid-item panel">
       <Options/>
       <AxesParams/>
-      <Coords title={"Координаты канваса"} source={PointMouse}/>
-      <Coords title={"Значения графика"} source={PointChart}/>
+      <Values/>
+      <Coords/>
 
       <Controls/> 
     </div>

@@ -1,33 +1,29 @@
 <!-------------------------------- ФУНКЦИОНАЛ --------------------------------->
 <script lang="ts">
-  import { convertFileSrc } from '@tauri-apps/api/tauri';
-
   import { onMount } from "svelte";
   import type { Point } from "../shared/types";
-  import { PointMouse, ChartData, Mode, ImagePath, ChartImage } from "../shared/store";
+  import { PointMouse, ChartData, Mode, Zoom, ImagePath, ImageSize } from "../shared/store";
   import { removeFrom, GROUPS } from "../shared/common";
 
+  let root: HTMLDivElement;
   let canvas: HTMLCanvasElement;
 
   onMount(() => resizeCanvas());
   onresize = () => resizeCanvas();
 
-  const DEFAULT_POINT: Point = { x: 0, y: 0 };
 
-  ImagePath.subscribe(val => { if ($ChartImage) $ChartImage.src = val; });
+  ChartData.subscribe(drawAll);
+  ImagePath.subscribe(val => {
+    if (!canvas) return;
+    canvas.style.setProperty('background-image', `url("${val}")`);
+  });
 
-  const resizeCanvas = () => {
-    const root = document.getElementById('chart-root');
-    if (!root) return;
-    const rect = root.getBoundingClientRect();
-    canvas.setAttribute('width', `${rect.width}px`);
-    canvas.setAttribute('height', `${rect.height}px`);
 
-    drawAll();
-  }
-
-  const onMouseMove = (event: MouseEvent) => PointMouse.set(getCoordMouse(event));
-
+  const onMove = (event: MouseEvent) => PointMouse.set(getCoordMouse(event));
+  const onWheel = (event: WheelEvent) => Zoom.update(val => {
+    const zoom = val + event.deltaY * 0.01;
+    return (zoom > 1 && zoom < 10) ? zoom : val;
+  });
   const onClick = (event: MouseEvent) => {
     const coord: Point = getCoordMouse(event);
     switch ($Mode) {
@@ -59,7 +55,17 @@
     }
   }
 
-  const getCoordMouse = (event: MouseEvent): Point => {
+
+  function resizeCanvas() {
+    if (!canvas || !root) return;
+    const rect = root.getBoundingClientRect();
+    canvas.setAttribute('width', `${rect.width}px`);
+    canvas.setAttribute('height', `${rect.height}px`);
+    ImageSize.set({ width: rect.width, height: rect.height });
+
+    drawAll();
+  }
+  function getCoordMouse(event: MouseEvent): Point {
     const rect : DOMRect = canvas.getBoundingClientRect();
 
     return {
@@ -67,8 +73,7 @@
       y: Math.trunc(event.clientY - rect.top)
     };
   }
-
-  const AddRemovePoint = (chart_data: any, group_name: string, point: Point) => {
+  function AddRemovePoint(chart_data: any, group_name: string, point: Point) {
     let result = {...chart_data};
     let points: Array<Point> = result[group_name].points;
 
@@ -86,7 +91,9 @@
 
     return result;
   }
-  const drawAll = () => {
+
+
+  function drawAll() {
     if (!canvas) return;
     const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
     if (!ctx) return;
@@ -97,10 +104,10 @@
     drawAxes(ctx);
     for(const entry of Object.entries(GROUPS)){
       drawPoints(ctx, ...entry);
+      drawCurve(ctx, entry[0]);
     }
   }
-
-  const drawAxes = (ctx: CanvasRenderingContext2D) => {
+  function drawAxes(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
     ctx.fillStyle = "#ff0000";
     ctx.strokeStyle = "#ff0000";
@@ -121,8 +128,7 @@
     ctx.stroke();
     
   }
-  const drawPoints = (ctx: CanvasRenderingContext2D, group_name: string, color: string) => {
-    console.log(group_name, color);
+  function drawPoints(ctx: CanvasRenderingContext2D, group_name: string, color: string) {
     $ChartData[group_name].points.forEach((point: Point) => {
       ctx.fillStyle = color;
       ctx.strokeStyle = color;
@@ -137,16 +143,30 @@
       ctx.stroke();
     })
   }
+  function drawCurve(ctx: CanvasRenderingContext2D, group_name: string) {
+    const points = $ChartData[group_name].points;
+    if (points.length < 4) return;
+    ctx.moveTo(points[0].x, points[0].y);
 
-  ChartData.subscribe(drawAll);
+    let i: number = 0;
+    for (i = 1; i < points.length - 2; i ++)
+    {
+      var xc = (points[i].x + points[i + 1].x) / 2;
+      var yc = (points[i].y + points[i + 1].y) / 2;
+      ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+    }
+    ctx.quadraticCurveTo(points[i].x, points[i].y, points[i+1].x,points[i+1].y);
+    ctx.stroke();
+  }
+
 </script>
 
 <!--------------------------------- РАЗМЕТКА ---------------------------------->
-<div id="chart-root" class="chart-root">
-  <img bind:this={$ChartImage} id="chart-image" class="chart-image" alt='none'/>
+<div bind:this={root} class="chart-root">
   <canvas bind:this={canvas} class="chart-canvas"
-    on:mousemove={onMouseMove}
-    on:click={onClick}
+  on:mousemove={onMove}
+  on:wheel={onWheel}
+  on:click={onClick}
   />
 </div>
 
@@ -155,23 +175,12 @@
   .chart-root {
     width: 100%;
     height: 100%;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative;
   }
   .chart-canvas {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    position: absolute;
-  }
-  .chart-image {
-    box-sizing: border-box;
-    width: 100%;
-    height: 100%;
-    position: absolute;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
   }
 </style>

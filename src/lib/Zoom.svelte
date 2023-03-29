@@ -1,48 +1,46 @@
 <!-------------------------------- ФУНКЦИОНАЛ --------------------------------->
 <script lang="ts">
-  import { convertFileSrc } from "@tauri-apps/api/tauri";
   import { onMount } from "svelte";
-  import { PointMouse, Zoom, ImagePath, ChartImage } from "../shared/store";
+  import { PointMouse, Zoom, ImagePath, ImageSize } from "../shared/store";
   import type { Point } from "../shared/types";
 
-  let root: HTMLDivElement;
-  let image: HTMLImageElement;
   let canvas: HTMLCanvasElement;
   let point: Point;
 
   onMount(() => drawCross());
 
-  const onMouseMove = (new_point: Point) => {
-    point = new_point
+  Zoom.subscribe(zoomBackground);
+  PointMouse.subscribe(onMouseMove);
+  ImagePath.subscribe(val => {
+    if (!canvas) return;
+    /* Загрузка изображения */
+    canvas.style.setProperty('background-image', `url("${val}")`)
+  });
+
+
+  function onMouseMove(new_point: Point) {
+    point = new_point;
     zoomBackground();
   }
 
-  // ImagePath.subscribe(val => {
-  //   if(!val || !image) return;
-  //   image.src = convertFileSrc(val);
-  // });
 
-  const zoomBackground = () => {
-    if(!canvas || !root || !image) return;
-    const rect_root: DOMRect = root.getBoundingClientRect();
-
+  function zoomBackground() {
+    if(!canvas) return;
     /* Масштабирование изображения */
     const size = {
-      width:  $Zoom * $ChartImage.width,
-      height: $Zoom * $ChartImage.height,
+      width:  $ImageSize.width * $Zoom,
+      height: $ImageSize.height * $Zoom,
     }
+    canvas.style.setProperty('background-size', `${size.width}px ${size.height}px`);
     /* Смещение изображения */
+    const rect = canvas.getBoundingClientRect();
     const offset = {
-      x: (-point.x - 1) * $Zoom + rect_root.width / 2,// * $Zoom ,//-point.x * $Zoom,
-      y: (-point.y - 1) * $Zoom + rect_root.height / 2// * $Zoom ,//-point.y * $Zoom
+      x: -point.x * $Zoom - 1 + rect.width / 2.0,
+      y: -point.y * $Zoom + rect.height / 2.0,
     }
-    image.style.setProperty('width', `${size.width}px`);
-    image.style.setProperty('height', `${size.height}px`);
-    image.style.setProperty('left', `${offset.x}px`);
-    image.style.setProperty('top', `${offset.y}px`);
+    canvas.style.setProperty('background-position', `${offset.x}px ${offset.y}px`);
   }
-
-  const drawCross = () => {
+  function drawCross() {
     if (!canvas) return;
     const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
 
@@ -54,37 +52,20 @@
     ctx.stroke();
   }
 
-  Zoom.subscribe(zoomBackground);
-  PointMouse.subscribe(onMouseMove);
 </script>
 
 <!--------------------------------- РАЗМЕТКА ---------------------------------->
-<div bind:this={root} class="zoom-root">
-  <img bind:this={image} class="zoom-image" src="/ecn.png" alt=""/>
-  <canvas bind:this={canvas} class="zoom-canvas"/>
-</div>
+<canvas bind:this={canvas} class="zoom-canvas"/>
 
 <!----------------------------------- СТИЛИ ----------------------------------->
 <style> 
-  .zoom-root {
-    box-sizing: border-box;
-    width: 100%;
-    aspect-ratio: 1;
-    /* border: 15px solid white; */
-    border-radius: 50%;
-    overflow: hidden;
-    position: relative;
-  }
-  .zoom-image { 
-    box-sizing: border-box;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-  }
   .zoom-canvas {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    position: absolute;
+    /* background-size: 600% 600%; */
+    background-repeat: no-repeat;
+    outline: 1px solid white;
+    /* border-radius: 50%; */
   }
 </style>

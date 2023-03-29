@@ -1,20 +1,14 @@
 <!-------------------------------- ФУНКЦИОНАЛ --------------------------------->
 <script lang="ts">
-  import type { Writable } from 'svelte/store';
-  import type { Point } from '../shared/types';
+  import { PointMouse } from '../shared/store';
 
-  export let title: string;
-  export let source: Writable<{x: number, y: number}>;
-
-  let coord: Point = { x: 0, y: 0};
-  source?.subscribe(p => coord = { x: p.x, y: p.y });
 </script>
 
 <!--------------------------------- РАЗМЕТКА ---------------------------------->
 <div class="root">
-  <span class="title">{title}</span>
-  <label class="label">X = <input class="input-coord" type="text" value={coord.x}></label>
-  <label class="label">Y = <input class="input-coord" type="text" value={coord.y}></label>
+  <span class="title">Координаты канваса</span>
+  <label class="label">X = <input class="input-coord" type="text" value={$PointMouse.x}></label>
+  <label class="label">Y = <input class="input-coord" type="text" value={$PointMouse.y}></label>
 </div>
 
 <!----------------------------------- СТИЛИ ----------------------------------->
